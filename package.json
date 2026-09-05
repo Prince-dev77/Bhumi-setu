@@ -1,0 +1,13 @@
+{
+  "name": "bhumi-setu-demo",
+  "version": "1.0.0",
+  "description": "Bhumi Setu — Land Record Digitization & Validation System (concept preview with a demo backend)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "dependencies": {}
+}

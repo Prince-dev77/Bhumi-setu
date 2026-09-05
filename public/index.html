@@ -1,0 +1,767 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bhumi Setu — Land Record Digitization &amp; Validation System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0E0D0B;
+    --bg-alt: #141210;
+    --surface: #1A1712;
+    --line: #2C2820;
+    --ink: #F2ECDE;
+    --ink-dim: #A79E8C;
+    --ink-faint: #6E6656;
+    --paper: #E7DEC7;
+    --gold: #C89B3C;
+    --gold-bright: #E7C878;
+    --ledger: #171310;
+    --danger: #B4573D;
+    --danger-bg: rgba(180,87,61,0.12);
+    --ok-bg: rgba(200,155,60,0.12);
+    --warn: #C9A24A;
+    --warn-bg: rgba(201,162,74,0.12);
+    --serif-line-height: 1.5;
+    --maxw: 1180px;
+  }
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:'Inter', sans-serif; font-size:16px; line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3, .display{
+    font-family:'Space Grotesk', sans-serif; font-weight:600; margin:0;
+    letter-spacing:-0.01em;
+  }
+  p{ margin:0; }
+  a{ color:inherit; text-decoration:none; }
+  img,svg{ display:block; max-width:100%; }
+  .wrap{ max-width:var(--maxw); margin:0 auto; padding:0 40px; }
+  @media (max-width:720px){ .wrap{ padding:0 22px; } }
+
+  ::selection{ background:var(--gold); color:#171310; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important; scroll-behavior:auto !important; }
+  }
+
+  /* ---------- NAV ---------- */
+  header.nav{
+    position:fixed; top:0; left:0; right:0; z-index:50;
+    background:linear-gradient(to bottom, rgba(14,13,11,0.92), rgba(14,13,11,0));
+    backdrop-filter:blur(6px);
+  }
+  .nav-inner{
+    max-width:var(--maxw); margin:0 auto; padding:22px 40px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  @media (max-width:720px){ .nav-inner{ padding:18px 22px; } }
+  .brand{ display:flex; align-items:center; gap:11px; }
+  .brand-mark{ width:30px; height:30px; flex:none; }
+  .brand-name{ font-family:'Space Grotesk', sans-serif; font-size:18px; font-weight:600; }
+  .brand-sub{ font-size:11px; color:var(--ink-faint); margin-top:1px; }
+  nav.links{ display:flex; align-items:center; gap:34px; }
+  nav.links a{ font-size:14px; color:var(--ink-dim); transition:color .2s; }
+  nav.links a:hover{ color:var(--ink); }
+  .nav-tag{ font-size:12.5px; color:var(--ink-faint); text-align:right; }
+  @media (max-width:900px){ nav.links, .nav-tag{ display:none; } }
+
+  /* ---------- BUTTONS ---------- */
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:13px 22px; border-radius:3px; font-size:14.5px; font-weight:500;
+    font-family:'Inter',sans-serif; cursor:pointer; border:1px solid transparent;
+    transition:transform .25s ease, background .25s ease, border-color .25s ease;
+  }
+  .btn-primary{ background:var(--gold); color:#1B1608; }
+  .btn-primary:hover{ background:var(--gold-bright); transform:translateY(-1px); }
+  .btn-ghost{ border-color:var(--line); color:var(--ink); }
+  .btn-ghost:hover{ border-color:var(--ink-dim); }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    min-height:100vh; display:flex; align-items:center;
+    padding:150px 0 80px; position:relative; overflow:hidden;
+  }
+  .hero-grid{
+    display:grid; grid-template-columns:1.05fr 0.95fr; gap:40px; align-items:center;
+    width:100%;
+  }
+  @media (max-width:980px){ .hero-grid{ grid-template-columns:1fr; } }
+  .hero-eyebrow{ font-size:13.5px; color:var(--ink-faint); margin-bottom:22px; }
+  .hero h1{
+    font-size:clamp(34px, 4.6vw, 54px); line-height:1.12; color:var(--ink);
+  }
+  .hero-lede{
+    margin-top:26px; max-width:46ch; font-size:17px; color:var(--ink-dim); line-height:1.65;
+  }
+  .hero-cta{ margin-top:38px; display:flex; gap:16px; flex-wrap:wrap; }
+  .scroll-cue{
+    margin-top:70px; display:flex; align-items:center; gap:12px;
+    font-size:12.5px; color:var(--ink-faint);
+  }
+  .scroll-cue .line{ width:38px; height:1px; background:var(--ink-faint); position:relative; overflow:hidden; }
+  .scroll-cue .line::after{
+    content:''; position:absolute; left:-100%; top:0; width:100%; height:100%; background:var(--gold);
+    animation:cue 2.4s ease-in-out infinite;
+  }
+  @keyframes cue{ 0%{left:-100%;} 50%{left:0;} 100%{left:100%;} }
+
+  /* ---------- 3D STACK ---------- */
+  .stack-scene{ width:100%; height:440px; perspective:2000px; position:relative; }
+  @media (max-width:980px){ .stack-scene{ height:340px; margin-top:20px; } }
+  .stack-rotator{
+    width:0; height:0; position:absolute; left:50%; top:56%;
+    transform-style:preserve-3d;
+    transform: rotateX(-16deg) rotateY(-42deg) rotateZ(0deg);
+    animation: sway 14s ease-in-out infinite;
+    will-change:transform;
+  }
+  @keyframes sway{
+    0%,100%{ transform: rotateX(-16deg) rotateY(-42deg); }
+    50%{ transform: rotateX(-13deg) rotateY(-30deg); }
+  }
+  .cube-face{ position:absolute; transform-style:preserve-3d; outline:1px solid rgba(255,255,255,0.06); outline-offset:-1px; }
+  :root{ --cW:280px; --cD:280px; --cH:270px; }
+  .cf-top{
+    width:var(--cW); height:var(--cD);
+    left:calc(var(--cW) / -2); top:calc(var(--cD) / -2);
+    transform:rotateX(90deg) translateZ(calc(var(--cH) / 2));
+    background:
+      repeating-linear-gradient(0deg, rgba(0,0,0,0.07) 0 1px, transparent 1px 20px),
+      repeating-linear-gradient(90deg, rgba(0,0,0,0.07) 0 1px, transparent 1px 20px),
+      var(--paper);
+  }
+  .cf-front{
+    width:var(--cW); height:var(--cH);
+    left:calc(var(--cW) / -2); top:calc(var(--cH) / -2);
+    transform:translateZ(calc(var(--cD) / 2));
+    overflow:hidden;
+  }
+  .cf-right{
+    width:var(--cD); height:var(--cH);
+    left:calc(var(--cD) / -2); top:calc(var(--cH) / -2);
+    transform:rotateY(90deg) translateZ(calc(var(--cW) / 2));
+    overflow:hidden; filter:brightness(0.6);
+  }
+  .band{ position:absolute; left:0; width:100%; }
+  .band-paper{ top:0; height:34%; background:var(--paper);
+    background-image:repeating-linear-gradient(180deg, transparent 0 12px, rgba(90,70,40,0.22) 12px 13px); }
+  .band-scan{ top:34%; height:33%; background:var(--gold);
+    background-image:repeating-linear-gradient(90deg, rgba(0,0,0,0.12) 0 2px, transparent 2px 9px);
+    overflow:hidden; }
+  .band-scan::after{
+    content:''; position:absolute; top:0; left:-30%; width:22%; height:100%;
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
+    animation:scanline 3.6s ease-in-out infinite;
+  }
+  @keyframes scanline{ 0%{ left:-30%; } 50%{ left:108%; } 100%{ left:108%; } }
+  .band-ledger{ top:67%; height:33%; border-top:1px solid rgba(200,155,60,0.5);
+    background:
+      repeating-linear-gradient(90deg, rgba(200,155,60,0.09) 0 1px, transparent 1px 24px),
+      linear-gradient(160deg, #2A2216, var(--ledger)); }
+  .node{ position:absolute; width:6px; height:6px; border-radius:50%; background:var(--gold-bright);
+    box-shadow:0 0 10px 3px rgba(231,200,120,0.85); animation:pulse 2.6s ease-in-out infinite; }
+  @keyframes pulse{ 0%,100%{ opacity:0.55; } 50%{ opacity:1; } }
+  .stack-caption{
+    position:absolute; bottom:6%; left:50%; transform:translateX(-50%);
+    display:flex; gap:22px; font-size:12px; color:var(--ink-faint); white-space:nowrap;
+  }
+  .stack-caption span{ display:flex; align-items:center; gap:6px; }
+  .dot{ width:7px; height:7px; border-radius:50%; }
+
+  /* ---------- SECTION SCAFFOLDING ---------- */
+  section{ padding:120px 0; }
+  @media (max-width:720px){ section{ padding:84px 0; } }
+  .section-alt{ background:var(--bg-alt); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+  .kicker{ font-size:14px; color:var(--gold); margin-bottom:16px; font-weight:500; }
+  .section-head{ max-width:640px; }
+  .section-head h2{ font-size:clamp(26px, 3.2vw, 38px); line-height:1.2; }
+  .section-head p{ margin-top:18px; color:var(--ink-dim); font-size:16.5px; max-width:56ch; }
+
+  .reveal{ opacity:0; transform:translateY(18px); transition:opacity .7s ease, transform .7s ease; }
+  .reveal.in{ opacity:1; transform:none; }
+
+  /* ---------- CONTEXT ---------- */
+  .break-grid{ margin-top:56px; display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line); }
+  @media (max-width:820px){ .break-grid{ grid-template-columns:1fr; } }
+  .break-item{ background:var(--bg-alt); padding:34px 30px; }
+  .break-item h3{ font-size:16px; font-weight:600; color:var(--ink); }
+  .break-item p{ margin-top:12px; font-size:14.5px; color:var(--ink-dim); line-height:1.6; }
+
+  /* ---------- MODULES ---------- */
+  .modules{ margin-top:64px; display:flex; flex-direction:column; }
+  .module{
+    display:grid; grid-template-columns:120px 1fr; gap:36px;
+    padding:38px 0; border-top:1px solid var(--line);
+  }
+  .modules .module:last-child{ border-bottom:1px solid var(--line); }
+  @media (max-width:720px){ .module{ grid-template-columns:1fr; gap:14px; } }
+  .module-mark{ width:44px; height:44px; }
+  .module h3{ font-size:21px; font-weight:600; }
+  .module p{ margin-top:12px; color:var(--ink-dim); font-size:15.5px; max-width:62ch; line-height:1.65; }
+  .module-row{ display:flex; align-items:flex-start; justify-content:space-between; gap:24px; flex-wrap:wrap; }
+  .module-name{ font-size:13px; color:var(--ink-faint); }
+
+  /* ---------- PROCESS ---------- */
+  .timeline{ margin-top:64px; position:relative; }
+  .timeline::before{
+    content:''; position:absolute; left:19px; top:8px; bottom:8px; width:1px; background:var(--line);
+  }
+  .step{ position:relative; padding:0 0 52px 64px; }
+  .step:last-child{ padding-bottom:0; }
+  .step-num{
+    position:absolute; left:0; top:-2px; width:40px; height:40px; border-radius:50%;
+    background:var(--surface); border:1px solid var(--line); color:var(--gold-bright);
+    display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk',sans-serif; font-size:14px;
+  }
+  .step h3{ font-size:19px; font-weight:600; }
+  .step p{ margin-top:10px; color:var(--ink-dim); font-size:15.5px; max-width:60ch; line-height:1.6; }
+
+  /* ---------- ABOUT ---------- */
+  .about-grid{ display:grid; grid-template-columns:1.2fr 0.8fr; gap:60px; align-items:start; }
+  @media (max-width:900px){ .about-grid{ grid-template-columns:1fr; gap:40px; } }
+  .about-grid p + p{ margin-top:16px; }
+  .about-grid .lede{ color:var(--ink-dim); font-size:16px; line-height:1.7; }
+  .stat-list{ display:flex; flex-direction:column; gap:26px; }
+  .stat{ border-left:2px solid var(--gold); padding-left:18px; }
+  .stat b{ font-family:'Space Grotesk',sans-serif; font-size:22px; display:block; color:var(--ink); }
+  .stat span{ font-size:13.5px; color:var(--ink-faint); }
+
+  /* ---------- LOOKUP DEMO ---------- */
+  .lookup-panel{
+    margin-top:56px; display:grid; grid-template-columns:0.9fr 1.1fr; gap:0;
+    border:1px solid var(--line); background:var(--surface);
+  }
+  @media (max-width:860px){ .lookup-panel{ grid-template-columns:1fr; } }
+  .lookup-form{ padding:38px; border-right:1px solid var(--line); }
+  @media (max-width:860px){ .lookup-form{ border-right:none; border-bottom:1px solid var(--line); } }
+  .lookup-result{ padding:38px; display:flex; flex-direction:column; justify-content:center; align-items:flex-start; }
+  .field{ margin-bottom:18px; }
+  .field label{ display:block; font-size:13px; color:var(--ink-faint); margin-bottom:7px; }
+  .field input, .field select, .field textarea{
+    width:100%; background:var(--bg); border:1px solid var(--line); color:var(--ink);
+    padding:12px 13px; font-family:'Inter',sans-serif; font-size:14.5px; border-radius:3px;
+    transition:border-color .2s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{
+    outline:none; border-color:var(--gold);
+  }
+  .field textarea{ resize:vertical; min-height:110px; }
+  .chips{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  .chip{
+    font-size:12.5px; color:var(--ink-dim); border:1px solid var(--line); border-radius:20px;
+    padding:6px 12px; cursor:pointer; background:transparent; font-family:'Inter',sans-serif;
+    transition:border-color .2s, color .2s;
+  }
+  .chip:hover{ border-color:var(--gold); color:var(--ink); }
+  .result-empty{ color:var(--ink-faint); font-size:14.5px; }
+  .result-card{ width:100%; }
+  .result-card h4{ font-family:'Space Grotesk',sans-serif; font-size:19px; color:var(--ink); }
+  .result-row{ display:flex; justify-content:space-between; gap:16px; padding:10px 0; border-top:1px solid var(--line); font-size:14px; }
+  .result-row span:first-child{ color:var(--ink-faint); }
+  .result-row span:last-child{ color:var(--ink); text-align:right; }
+  .badge{
+    display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:500;
+    padding:5px 12px; border-radius:20px; margin-bottom:16px;
+  }
+  .badge-dot{ width:7px; height:7px; border-radius:50%; }
+  .badge.validated{ background:var(--ok-bg); color:var(--gold-bright); }
+  .badge.validated .badge-dot{ background:var(--gold-bright); }
+  .badge.needs_review{ background:var(--warn-bg); color:var(--warn); }
+  .badge.needs_review .badge-dot{ background:var(--warn); }
+  .badge.mismatch, .badge.not_found{ background:var(--danger-bg); color:var(--danger); }
+  .badge.mismatch .badge-dot, .badge.not_found .badge-dot{ background:var(--danger); }
+  .form-msg{ margin-top:16px; font-size:14px; padding:12px 14px; border-radius:3px; display:none; }
+  .form-msg.show{ display:block; }
+  .form-msg.ok{ background:var(--ok-bg); color:var(--gold-bright); }
+  .form-msg.err{ background:var(--danger-bg); color:var(--danger); }
+
+  /* ---------- CONTACT ---------- */
+  .contact-grid{ display:grid; grid-template-columns:1fr 1fr; gap:60px; margin-top:56px; }
+  @media (max-width:860px){ .contact-grid{ grid-template-columns:1fr; gap:40px; } }
+  .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:520px){ .field-row{ grid-template-columns:1fr; } }
+  .office-block + .office-block{ margin-top:30px; }
+  .office-block h4{ font-size:13px; color:var(--ink-faint); margin-bottom:8px; font-weight:500; }
+  .office-block p, .office-block a{ display:block; font-size:15px; color:var(--ink); line-height:1.7; }
+  .office-block a:hover{ color:var(--gold-bright); }
+
+  /* ---------- FOOTER ---------- */
+  footer{ background:var(--bg-alt); border-top:1px solid var(--line); padding:76px 0 30px; }
+  .footer-grid{ display:grid; grid-template-columns:1.4fr 0.8fr 0.8fr; gap:50px; }
+  @media (max-width:720px){ .footer-grid{ grid-template-columns:1fr; gap:34px; } }
+  .footer-grid h4{ font-size:13.5px; color:var(--ink-faint); font-weight:500; margin-bottom:16px; }
+  .footer-grid p{ color:var(--ink-dim); font-size:14.5px; line-height:1.6; max-width:38ch; }
+  .footer-links{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:11px; }
+  .footer-links a{ font-size:14.5px; color:var(--ink-dim); transition:color .2s; }
+  .footer-links a:hover{ color:var(--ink); }
+  .footer-bottom{
+    margin-top:64px; padding-top:26px; border-top:1px solid var(--line);
+    display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap;
+    font-size:13px; color:var(--ink-faint);
+  }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 32 32" fill="none">
+        <rect x="1" y="1" width="30" height="30" rx="4" stroke="#C89B3C" stroke-width="1.4"/>
+        <path d="M9 21V13.5L16 9l7 4.5V21" stroke="#E7DEC7" stroke-width="1.4" stroke-linejoin="round"/>
+        <path d="M13 21v-6h6v6" stroke="#C89B3C" stroke-width="1.4"/>
+      </svg>
+      <div>
+        <div class="brand-name">Bhumi Setu</div>
+        <div class="brand-sub">Land record validation system</div>
+      </div>
+    </div>
+    <nav class="links">
+      <a href="#modules">Modules</a>
+      <a href="#process">How it works</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <div class="nav-tag">Ministry of Rural Development<br>Government of India</div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="hero-eyebrow">Department of Land Resources · Ministry of Rural Development</div>
+      <h1>A land record is written once, on paper, and trusted for generations.</h1>
+      <p class="hero-lede">Bhumi Setu gives that single fragile copy a second, verifiable life — scanned, checked against the survey map, and sealed against quiet edits.</p>
+      <div class="hero-cta">
+        <a href="#process" class="btn btn-primary">See how it works</a>
+        <a href="#modules" class="btn btn-ghost">Browse the modules</a>
+      </div>
+      <div class="scroll-cue"><div class="line"></div>Scroll</div>
+    </div>
+
+    <div class="stack-scene" aria-hidden="true">
+      <div class="stack-rotator">
+        <div class="cube-face cf-top"></div>
+        <div class="cube-face cf-front">
+          <div class="band band-paper"></div>
+          <div class="band band-scan"></div>
+          <div class="band band-ledger">
+            <div class="node" style="left:18%; top:38%; animation-delay:0s;"></div>
+            <div class="node" style="left:44%; top:64%; animation-delay:.6s;"></div>
+            <div class="node" style="left:70%; top:32%; animation-delay:1.2s;"></div>
+          </div>
+        </div>
+        <div class="cube-face cf-right">
+          <div class="band band-paper"></div>
+          <div class="band band-scan"></div>
+          <div class="band band-ledger">
+            <div class="node" style="left:30%; top:50%; animation-delay:.3s;"></div>
+            <div class="node" style="left:64%; top:38%; animation-delay:.9s;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="stack-caption">
+        <span><span class="dot" style="background:var(--paper);"></span>Paper record</span>
+        <span><span class="dot" style="background:var(--gold);"></span>Digitized</span>
+        <span><span class="dot" style="background:var(--gold-bright);"></span>Validated</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section-alt">
+  <div class="wrap reveal">
+    <div class="section-head">
+      <h2>Most of India's land history still lives in ink.</h2>
+      <p>Ownership, tenure, and mutation history are recorded by hand in registers kept at the tehsil office — the same registers a sale, a loan, or an inheritance claim depends on decades later.</p>
+    </div>
+    <div class="break-grid">
+      <div class="break-item">
+        <h3>Records damaged</h3>
+        <p>Fire, flooding, and termites can erase decades of entries that were never copied anywhere else.</p>
+      </div>
+      <div class="break-item">
+        <h3>Records disputed</h3>
+        <p>One mismatched survey number between the register and the map can freeze a sale for years.</p>
+      </div>
+      <div class="break-item">
+        <h3>Records duplicated</h3>
+        <p>The same parcel, entered on two different pages, by two different clerks, decades apart.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="modules">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="kicker">Modules</div>
+      <h2>Four systems, one record.</h2>
+      <p>Each module addresses a different way a paper record breaks down — from illegible ink to a quietly altered entry.</p>
+    </div>
+
+    <div class="modules reveal">
+      <div class="module">
+        <svg class="module-mark" viewBox="0 0 44 44" fill="none"><rect x="10" y="6" width="24" height="32" rx="2" stroke="#C89B3C" stroke-width="1.4"/><path d="M15 14h14M15 20h14M15 26h9" stroke="#A79E8C" stroke-width="1.4"/></svg>
+        <div>
+          <div class="module-row"><h3>Digitization engine</h3><span class="module-name">OCR &amp; script recognition</span></div>
+          <p>Reads handwritten patta, khatauni, and mutation registers in regional scripts, and turns ink into structured fields: owner, parcel, area, and tenure.</p>
+        </div>
+      </div>
+      <div class="module">
+        <svg class="module-mark" viewBox="0 0 44 44" fill="none"><circle cx="22" cy="22" r="15" stroke="#C89B3C" stroke-width="1.4"/><path d="M22 14v8l6 4" stroke="#A79E8C" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <div>
+          <div class="module-row"><h3>AI validation layer</h3><span class="module-name">Consistency checks</span></div>
+          <p>Cross-checks every digitized entry against prior mutations and neighboring records, flagging mismatches before they harden into disputes.</p>
+        </div>
+      </div>
+      <div class="module">
+        <svg class="module-mark" viewBox="0 0 44 44" fill="none"><path d="M22 5 8 12v8c0 10 6 16 14 19 8-3 14-9 14-19v-8L22 5Z" stroke="#C89B3C" stroke-width="1.4" stroke-linejoin="round"/><path d="M22 16v13M16 20l6-4 6 4" stroke="#A79E8C" stroke-width="1.4"/></svg>
+        <div>
+          <div class="module-row"><h3>GIS linkage</h3><span class="module-name">Spatial mapping</span></div>
+          <p>Ties every record to its exact surveyed boundary, so what the paper says and what the map shows finally agree.</p>
+        </div>
+      </div>
+      <div class="module">
+        <svg class="module-mark" viewBox="0 0 44 44" fill="none"><rect x="7" y="17" width="10" height="10" rx="1.5" stroke="#C89B3C" stroke-width="1.4"/><rect x="27" y="17" width="10" height="10" rx="1.5" stroke="#C89B3C" stroke-width="1.4"/><rect x="17" y="7" width="10" height="10" rx="1.5" stroke="#C89B3C" stroke-width="1.4"/><path d="M17 20h10M22 17v-3M14 17V13a3 3 0 0 1 3-3h1M30 17V13a3 3 0 0 0-3-3h-1" stroke="#A79E8C" stroke-width="1.2"/></svg>
+        <div>
+          <div class="module-row"><h3>Tamper-evident ledger</h3><span class="module-name">Chained records</span></div>
+          <p>Hashes every verified change into a chained record, so a parcel's history can be audited but never quietly rewritten.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="process" class="section-alt">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="kicker">Process</div>
+      <h2>From ink to an entry nobody can quietly change.</h2>
+      <p>A record moves through five stages before it's considered verified — each one narrowing the gap between what's on paper and what's true.</p>
+    </div>
+    <div class="timeline reveal">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>Scan &amp; capture</h3>
+        <p>Field teams digitize source registers village by village, preserving the original image alongside the extracted text.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>Structure</h3>
+        <p>OCR and language models extract owner, parcel, area, and mutation history into clean, searchable fields.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>Validate</h3>
+        <p>The system checks each entry against GIS boundaries, prior mutations, and adjoining records for inconsistencies.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <h3>Seal</h3>
+        <p>A verified record is hashed and added to the chain — closing the door on edits made without a trace.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <h3>Publish</h3>
+        <p>Citizens and revenue officers can view, and rely on, the verified record online — with its full history attached.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="about">
+  <div class="wrap about-grid">
+    <div class="reveal">
+      <div class="kicker">About</div>
+      <h2 style="font-size:clamp(24px,3vw,32px); margin-bottom:20px;">Part of a larger mandate.</h2>
+      <p class="lede">The Ministry of Rural Development, through its Department of Land Resources, has long overseen the modernization of India's land records — moving them from tehsil registers toward a single, dependable digital source of truth.</p>
+      <p class="lede">Bhumi Setu is conceived as the validation layer within that effort: the step where a digitized record is checked, cross-referenced, and sealed before anyone downstream is asked to trust it.</p>
+    </div>
+    <div class="stat-list reveal">
+      <div class="stat"><b>Village-level capture</b><span>Digitization organized by tehsil and village, not by document type alone</span></div>
+      <div class="stat"><b>Cross-checked, not just scanned</b><span>Every entry validated against GIS boundaries and mutation history</span></div>
+      <div class="stat"><b>Auditable by design</b><span>A chained record of every verified change, open to review</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section-alt" id="lookup">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="kicker">Try it</div>
+      <h2>Check a record's validation status.</h2>
+      <p>A working look at the validation layer — enter a parcel ID from the sample records below and the system checks it the way it would check a real one.</p>
+    </div>
+    <div class="lookup-panel reveal">
+      <div class="lookup-form">
+        <div class="field">
+          <label for="lk-parcel">Parcel ID</label>
+          <input id="lk-parcel" type="text" placeholder="e.g. UP-GZB-0231" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="lk-owner">Owner name on your document</label>
+          <input id="lk-owner" type="text" placeholder="As written on the paper record" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="lk-survey">Survey number</label>
+          <input id="lk-survey" type="text" placeholder="Optional, improves accuracy" autocomplete="off">
+        </div>
+        <button class="btn btn-primary" id="lk-submit" style="width:100%; justify-content:center;">Validate record</button>
+        <div class="chips">
+          <button type="button" class="chip" data-parcel="UP-GZB-0231" data-owner="Ram Bahadur Singh" data-survey="118/4">UP-GZB-0231</button>
+          <button type="button" class="chip" data-parcel="MH-PUN-1042" data-owner="Sunita Deshmukh" data-survey="76/2A">MH-PUN-1042</button>
+          <button type="button" class="chip" data-parcel="TN-TVL-0087" data-owner="Karthik Raja" data-survey="203">TN-TVL-0087</button>
+        </div>
+        <div class="form-msg" id="lk-msg"></div>
+      </div>
+      <div class="lookup-result" id="lk-result">
+        <p class="result-empty">Enter a parcel ID — or pick one of the sample records — to see how the validation engine reads it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="kicker">Contact</div>
+      <h2>Get in touch with the Department.</h2>
+      <p>For record corrections, technical issues with digitized entries, or questions about the rollout in your district.</p>
+    </div>
+    <div class="contact-grid reveal">
+      <form id="contact-form" novalidate>
+        <div class="field-row">
+          <div class="field">
+            <label for="ct-name">Full name</label>
+            <input id="ct-name" name="name" type="text" required>
+          </div>
+          <div class="field">
+            <label for="ct-email">Email</label>
+            <input id="ct-email" name="email" type="email" required>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="ct-phone">Phone (optional)</label>
+            <input id="ct-phone" name="phone" type="tel">
+          </div>
+          <div class="field">
+            <label for="ct-district">District</label>
+            <input id="ct-district" name="district" type="text" required>
+          </div>
+        </div>
+        <div class="field">
+          <label for="ct-subject">Subject</label>
+          <select id="ct-subject" name="subject">
+            <option>General inquiry</option>
+            <option>Record correction request</option>
+            <option>Technical issue</option>
+            <option>Grievance</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="ct-message">Message</label>
+          <textarea id="ct-message" name="message" required></textarea>
+        </div>
+        <button class="btn btn-primary" type="submit">Send message</button>
+        <div class="form-msg" id="ct-msg"></div>
+      </form>
+
+      <div>
+        <div class="office-block">
+          <h4>Office</h4>
+          <p>Department of Land Resources<br>Ministry of Rural Development<br>Krishi Bhawan, New Delhi – 110001</p>
+        </div>
+        <div class="office-block">
+          <h4>Email</h4>
+          <a href="mailto:support@bhumisetu.gov.in">support@bhumisetu.gov.in</a>
+        </div>
+        <div class="office-block">
+          <h4>Helpline</h4>
+          <a href="tel:18001801551">1800-180-1551</a> (toll-free, Mon–Sat, 9:30am–6pm)
+        </div>
+        <div class="office-block">
+          <h4>Grievance redressal</h4>
+          <a href="#">rural.gov.in/grievance</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <h4>Bhumi Setu</h4>
+        <p>An intelligent land record digitization and validation system, developed under the Ministry of Rural Development.</p>
+      </div>
+      <div>
+        <h4>Sections</h4>
+        <ul class="footer-links">
+          <li><a href="#modules">Modules</a></li>
+          <li><a href="#process">How it works</a></li>
+          <li><a href="#about">About</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <ul class="footer-links">
+          <li><a href="mailto:support@bhumisetu.gov.in">support@bhumisetu.gov.in</a></li>
+          <li><a href="tel:18001801551">1800-180-1551</a></li>
+          <li><a href="#">rural.gov.in</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>Ministry of Rural Development, Government of India</span>
+      <span>Concept preview — not an official government platform.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Scroll-reveal
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.15 });
+  revealEls.forEach(el=>io.observe(el));
+
+  // Subtle pointer-driven tilt on the hero cube, layered on top of the CSS sway animation
+  const rotator = document.querySelector('.stack-rotator');
+  const scene = document.querySelector('.stack-scene');
+  if (rotator && scene && matchMedia('(pointer:fine)').matches) {
+    scene.addEventListener('mousemove', (e)=>{
+      const r = scene.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width - 0.5;
+      const py = (e.clientY - r.top) / r.height - 0.5;
+      rotator.style.animationPlayState = 'paused';
+      rotator.style.transform = `rotateX(${-16 - py*8}deg) rotateY(${-42 + px*16}deg)`;
+    });
+    scene.addEventListener('mouseleave', ()=>{
+      rotator.style.animationPlayState = 'running';
+      rotator.style.transform = '';
+    });
+  }
+
+  // ---------- Record lookup / validation demo ----------
+  const lkParcel = document.getElementById('lk-parcel');
+  const lkOwner = document.getElementById('lk-owner');
+  const lkSurvey = document.getElementById('lk-survey');
+  const lkResult = document.getElementById('lk-result');
+  const lkMsg = document.getElementById('lk-msg');
+  const lkSubmit = document.getElementById('lk-submit');
+
+  document.querySelectorAll('.chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      lkParcel.value = chip.dataset.parcel;
+      lkOwner.value = chip.dataset.owner;
+      lkSurvey.value = chip.dataset.survey;
+    });
+  });
+
+  function badgeLabel(status){
+    return { validated:'Validated', needs_review:'Needs review', mismatch:'Mismatch found', not_found:'Not found' }[status] || status;
+  }
+
+  function showMsg(el, text, kind){
+    el.textContent = text;
+    el.className = 'form-msg show ' + kind;
+  }
+  function hideMsg(el){ el.className = 'form-msg'; }
+
+  async function runLookup(){
+    const parcelId = lkParcel.value.trim();
+    if (!parcelId){ showMsg(lkMsg, 'Enter a parcel ID first.', 'err'); return; }
+    hideMsg(lkMsg);
+    lkSubmit.disabled = true;
+    lkSubmit.textContent = 'Checking…';
+    try{
+      const res = await fetch('/api/validate', {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({ parcelId, ownerName: lkOwner.value.trim(), surveyNumber: lkSurvey.value.trim() })
+      });
+      if (!res.ok) throw new Error('Server error');
+      const data = await res.json();
+
+      if (data.status === 'not_found'){
+        lkResult.innerHTML = `
+          <div class="badge not_found"><span class="badge-dot"></span>${badgeLabel(data.status)}</div>
+          <p class="result-empty">No digitized record matches that parcel ID yet. Double-check the ID or try one of the sample records.</p>`;
+        return;
+      }
+      const r = data.record;
+      const rows = [
+        ['Owner on record', r.ownerName],
+        ['Village', r.village],
+        ['District', r.district],
+        ['State', r.state],
+        ['Survey number', r.surveyNumber],
+        ['Area', r.area],
+        ['Tenure', r.tenureType],
+        ['Last updated', r.lastUpdated],
+        ['Confidence score', data.confidence + '%']
+      ].map(([k,v])=>`<div class="result-row"><span>${k}</span><span>${v}</span></div>`).join('');
+
+      lkResult.innerHTML = `
+        <div class="badge ${data.status}"><span class="badge-dot"></span>${badgeLabel(data.status)}</div>
+        <div class="result-card"><h4>${r.parcelId}</h4>${rows}</div>`;
+    }catch(err){
+      showMsg(lkMsg, 'Could not reach the validation service. If you are running this file directly, start the included backend (node server.js) first.', 'err');
+    }finally{
+      lkSubmit.disabled = false;
+      lkSubmit.textContent = 'Validate record';
+    }
+  }
+  lkSubmit.addEventListener('click', runLookup);
+  [lkParcel, lkOwner, lkSurvey].forEach(input=>{
+    input.addEventListener('keydown', (e)=>{ if (e.key === 'Enter'){ e.preventDefault(); runLookup(); } });
+  });
+
+  // ---------- Contact form ----------
+  const contactForm = document.getElementById('contact-form');
+  const ctMsg = document.getElementById('ct-msg');
+  contactForm.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    hideMsg(ctMsg);
+    const payload = Object.fromEntries(new FormData(contactForm).entries());
+    if (!payload.name || !payload.email || !payload.district || !payload.message){
+      showMsg(ctMsg, 'Please fill in your name, email, district, and message.', 'err');
+      return;
+    }
+    const submitBtn = contactForm.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending…';
+    try{
+      const res = await fetch('/api/contact', {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('Server error');
+      const data = await res.json();
+      showMsg(ctMsg, `Message received. Reference ID: ${data.id}. The Department will respond by email.`, 'ok');
+      contactForm.reset();
+    }catch(err){
+      showMsg(ctMsg, 'Could not reach the server. If you are running this file directly, start the included backend (node server.js) first.', 'err');
+    }finally{
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Send message';
+    }
+  });
+</script>
+</body>
+</html>
